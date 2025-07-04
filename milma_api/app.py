@@ -18,3 +18,16 @@ def create_tables():
 def get_farmers():
     farmers = Farmer.query.all()
     return jsonify([farmer.to_dict() for farmer in farmers])
+
+@app.route('/api/farmers/<int:id>', methods=['GET'])
+def get_farmer(id):
+    farmer = Farmer.query.get_or_404(id)
+    return jsonify(farmer.to_dict())
+
+@app.route('/api/farmers', methods=['POST'])
+def create_farmer():
+    data = request.json
+    farmer = Farmer(**data)
+    db.session.add(farmer)
+    db.session.commit()
+    return jsonify(farmer.to_dict()), 201
