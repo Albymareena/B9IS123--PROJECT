@@ -43,3 +43,10 @@ def update_farmer(id):
         setattr(farmer, key, value)
     db.session.commit()
     return jsonify(farmer.to_dict())
+
+@app.route('/api/farmers/<int:id>', methods=['DELETE'])
+def delete_farmer(id):
+    farmer = Farmer.query.get_or_404(id)
+    db.session.delete(farmer)
+    db.session.commit()
+    return '', 204
