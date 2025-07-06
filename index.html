@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Milma Society Information System</title>
+</head>
+<body>
+     <div id="farmers-section" class="section active">
+            <h2>Manage Farmers</h2>
+            <h3>Add/Edit Farmer</h3>
+            <form id="farmer-form">
+                <input type="hidden" id="farmer-id">
+                <div class="form-group">
+                    <label for="farmer-name">Name:</label>
+                    <input type="text" id="farmer-name" required>
+                    <span id="farmer-name-error" class="error"></span>
+                </div>
+                <div class="form-group">
+                    <label for="farmer-village">Village:</label>
+                    <input type="text" id="farmer-village" required>
+                    <span id="farmer-village-error" class="error"></span>
+                </div>
+                <div class="form-group">
+                    <label for="farmer-contact">Contact:</label>
+                    <input type="text" id="farmer-contact" required>
+                    <span id="farmer-contact-error" class="error"></span>
+                </div>
+                <button type="submit">Save Farmer</button>
+                <button type="button" onclick="clearFarmerForm()">Clear</button>
+            </form>
+            <h3>All Farmers</h3>
+            <table id="farmers-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Village</th>
+                        <th>Contact</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="farmers-tbody">
+                    <tr><td colspan="5">Loading farmers...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+</body>
+</html>
