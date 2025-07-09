@@ -83,3 +83,10 @@ def update_milk_collection(id):
         setattr(record, key, value)
     db.session.commit()
     return jsonify(record.to_dict())
+
+@app.route('/api/milk_collections/<int:id>', methods=['DELETE'])
+def delete_milk_collection(id):
+    record = MilkCollection.query.get_or_404(id)
+    db.session.delete(record)
+    db.session.commit()
+    return '', 204
