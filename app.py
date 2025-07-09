@@ -50,3 +50,14 @@ def delete_farmer(id):
     db.session.delete(farmer)
     db.session.commit()
     return '', 204
+
+# MILK COLLECTION ROUTES
+@app.route('/api/milk_collections', methods=['GET'])
+def get_milk_collections():
+    records = MilkCollection.query.all()
+    return jsonify([r.to_dict() for r in records])
+
+@app.route('/api/milk_collections/<int:id>', methods=['GET'])
+def get_milk_collection(id):
+    record = MilkCollection.query.get_or_404(id)
+    return jsonify(record.to_dict())
