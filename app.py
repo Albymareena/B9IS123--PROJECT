@@ -74,3 +74,12 @@ def create_milk_collection():
     db.session.add(record)
     db.session.commit()
     return jsonify(record.to_dict()), 201
+
+@app.route('/api/milk_collections/<int:id>', methods=['PUT'])
+def update_milk_collection(id):
+    data = request.json
+    record = MilkCollection.query.get_or_404(id)
+    for key, value in data.items():
+        setattr(record, key, value)
+    db.session.commit()
+    return jsonify(record.to_dict())
