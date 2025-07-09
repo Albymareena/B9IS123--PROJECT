@@ -61,3 +61,16 @@ def get_milk_collections():
 def get_milk_collection(id):
     record = MilkCollection.query.get_or_404(id)
     return jsonify(record.to_dict())
+
+@app.route('/api/milk_collections/farmer/<int:farmer_id>', methods=['GET'])
+def get_milk_by_farmer(farmer_id):
+    records = MilkCollection.query.filter_by(farmer_id=farmer_id).all()
+    return jsonify([r.to_dict() for r in records])
+
+@app.route('/api/milk_collections', methods=['POST'])
+def create_milk_collection():
+    data = request.json
+    record = MilkCollection(**data)
+    db.session.add(record)
+    db.session.commit()
+    return jsonify(record.to_dict()), 201
