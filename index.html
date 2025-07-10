@@ -180,6 +180,119 @@
             }
         });
 
+        // --- Milk Collection Section ---
+        async function loadMilkCollections() {
+            try {
+                const response = await fetch(`${API_BASE}/milk_collections`);
+                const milkCollections = await response.json();
+                const tbody = document.getElementById('milk-tbody');
+                if (milkCollections.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5">No milk collections found</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = milkCollections.map(collection => {
+                    const farmer = farmers.find(f => f.id === collection.farmer_id);
+                    const farmerName = farmer ? farmer.name : 'Unknown';
+                    return `
+                        <tr>
+                            <td>${collection.id}</td>
+                            <td>${farmerName}</td>
+                            <td>${collection.date}</td>
+                            <td>${collection.volume_litres}</td>
+                            <td>
+                                <button class="edit-btn" onclick="editMilkCollection(${collection.id})">Edit</button>
+                                <button class="delete-btn" onclick="deleteMilkCollection(${collection.id})">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+                populateFarmerDropdowns();
+            } catch (error) {
+                showMessage('Failed to load milk collections', true);
+            }
+        }
+
+        async function editMilkCollection(id) {
+            try {
+                const response = await fetch(`${API_BASE}/milk/${id}`);
+                const collection = await response.json();
+                document.getElementById('milk-id').value = collection.id;
+                document.getElementById('milk-farmer').value = collection.farmer_id;
+                document.getElementById('milk-date').value = collection.date;
+                document.getElementById('milk-volume').value = collection.volume_litres;
+            } catch (error) {
+                showMessage('Failed to load milk collection details', true);
+            }
+        }
+
+        async function deleteMilkCollection(id) {
+            if (!confirm('Are you sure you want to delete this milk collection?')) return;
+            try {
+                await fetch(`${API_BASE}/milk/${id}`, { method: 'DELETE' });
+                showMessage('Milk collection deleted');
+                loadMilkCollections();
+            } catch (error) {
+                showMessage('Failed to delete milk collection', true);
+            }
+        }
+
+        function clearMilkForm() {
+            document.getElementById('milk-form').reset();
+            document.getElementById('milk-id').value = '';
+            document.getElementById('milk-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('milk-farmer-error').textContent = '';
+            document.getElementById('milk-date-error').textContent = '';
+            document.getElementById('milk-volume-error').textContent = '';
+        }
+
+        document.getElementById('milk-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const id = document.getElementById('milk-id').value;
+            const farmer_id = document.getElementById('milk-farmer').value;
+            const date = document.getElementById('milk-date').value;
+            const volume_litres = parseFloat(document.getElementById('milk-volume').value);
+
+            // Simple validation
+            let isValid = true;
+            if (!farmer_id) {
+                document.getElementById('milk-farmer-error').textContent = 'Farmer is required';
+                isValid = false;
+            }
+            if (!date) {
+                document.getElementById('milk-date-error').textContent = 'Date is required';
+                isValid = false;
+            }
+            if (!volume_litres || volume_litres <= 0) {
+                document.getElementById('milk-volume-error').textContent = 'Valid volume is required';
+                isValid = false;
+            }
+            if (!isValid) return;
+
+            try {
+                if (id) {
+                    // Update collection
+                    await fetch(`${API_BASE}/milk/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ farmer_id: parseInt(farmer_id), date, volume_litres })
+                    });
+                    showMessage('Milk collection updated');
+                } else {
+                    // Add new collection
+                    await fetch(`${API_BASE}/milk`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ farmer_id: parseInt(farmer_id), date, volume_litres })
+                    });
+                    showMessage('Milk collection added');
+                }
+                clearMilkForm();
+                loadMilkCollections();
+            } catch (error) {
+                showMessage('Failed to save milk collection', true);
+            }
+        });
+
         // Initialize the app when the page loads
         document.addEventListener('DOMContentLoaded', function() {
             loadFarmers();
