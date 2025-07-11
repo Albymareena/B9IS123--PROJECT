@@ -90,3 +90,14 @@ def delete_milk_collection(id):
     db.session.delete(record)
     db.session.commit()
     return '', 204
+
+# PAYMENT ROUTES
+@app.route('/api/payments', methods=['GET'])
+def get_payments():
+    payments = Payment.query.all()
+    return jsonify([p.to_dict() for p in payments])
+
+@app.route('/api/payments/<int:id>', methods=['GET'])
+def get_payment(id):
+    payment = Payment.query.get_or_404(id)
+    return jsonify(payment.to_dict())
