@@ -101,3 +101,8 @@ def get_payments():
 def get_payment(id):
     payment = Payment.query.get_or_404(id)
     return jsonify(payment.to_dict())
+
+@app.route('/api/payments/farmer/<int:farmer_id>', methods=['GET'])
+def get_payments_by_farmer(farmer_id):
+    payments = Payment.query.filter_by(farmer_id=farmer_id).all()
+    return jsonify([p.to_dict() for p in payments])
