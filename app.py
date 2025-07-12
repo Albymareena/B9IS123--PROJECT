@@ -106,3 +106,30 @@ def get_payment(id):
 def get_payments_by_farmer(farmer_id):
     payments = Payment.query.filter_by(farmer_id=farmer_id).all()
     return jsonify([p.to_dict() for p in payments])
+
+@app.route('/api/payments', methods=['POST'])
+def create_payment():
+    data = request.json
+    payment = Payment(**data)
+    db.session.add(payment)
+    db.session.commit()
+    return jsonify(payment.to_dict()), 201
+
+@app.route('/api/payments/<int:id>', methods=['PUT'])
+def update_payment(id):
+    data = request.json
+    payment = Payment.query.get_or_404(id)
+    for key, value in data.items():
+        setattr(payment, key, value)
+    db.session.commit()
+    return jsonify(payment.to_dict())
+
+@app.route('/api/payments/<int:id>', methods=['DELETE'])
+def delete_payment(id):
+    payment = Payment.query.get_or_404(id)
+    db.session.delete(payment)
+    db.session.commit()
+    return '', 204
+
+if __name__ == '__main__':
+    app.run(debug=True)
