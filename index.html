@@ -4,9 +4,113 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Milma Society Information System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border: 1px solid #ccc;
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            display: none;
+        }
+        .section.active {
+            display: block;
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        input, select, button {
+            padding: 5px;
+            margin: 5px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .delete-btn {
+            background-color: #f44336;
+        }
+        .delete-btn:hover {
+            background-color: #da190b;
+        }
+        .edit-btn {
+            background-color: #008CBA;
+        }
+        .edit-btn:hover {
+            background-color: #007B9A;
+        }
+        .form-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: inline-block;
+            width: 100px;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-size: 12px;
+        }
+        .success {
+            color: green;
+            font-size: 12px;
+        }
+        .nav-buttons button {
+            margin-right: 10px;
+        }
+        .nav-buttons button.active {
+            background-color: #4CAF50;
+        }
+    </style>
 </head>
 <body>
-     <div id="farmers-section" class="section active">
+    <div class="container">
+        <h1>Milma Dairy System</h1>
+        <p><strong>Organisation:</strong> Village Dairy Cooperative</p>
+
+        <!-- Navigation Buttons -->
+        <div class="nav-buttons">
+            <button id="nav-farmers" class="active" onclick="showSection('farmers')">Farmers</button>
+            <button id="nav-milk" onclick="showSection('milk')">Milk Collection</button>
+            <button id="nav-payments" onclick="showSection('payments')">Payments</button>
+        </div>
+
+        <!-- Status Message -->
+        <div id="status-message"></div>
+
+        <!-- Farmers Section -->
+        <div id="farmers-section" class="section active">
             <h2>Manage Farmers</h2>
             <h3>Add/Edit Farmer</h3>
             <form id="farmer-form">
@@ -45,7 +149,95 @@
                 </tbody>
             </table>
         </div>
-<script>
+
+        <!-- Milk Collection Section -->
+        <div id="milk-section" class="section">
+            <h2>Manage Milk Collection</h2>
+            <h3>Add/Edit Milk Collection</h3>
+            <form id="milk-form">
+                <input type="hidden" id="milk-id">
+                <div class="form-group">
+                    <label for="milk-farmer">Farmer:</label>
+                    <select id="milk-farmer" required>
+                        <option value="">Select Farmer</option>
+                    </select>
+                    <span id="milk-farmer-error" class="error"></span>
+                </div>
+                <div class="form-group">
+                    <label for="milk-date">Date:</label>
+                    <input type="date" id="milk-date" required>
+                    <span id="milk-date-error" class="error"></span>
+                </div>
+                <div class="form-group">
+                    <label for="milk-volume">Volume (Litres):</label>
+                    <input type="number" step="0.1" id="milk-volume" required>
+                    <span id="milk-volume-error" class="error"></span>
+                </div>
+                <button type="submit">Save Collection</button>
+                <button type="button" onclick="clearMilkForm()">Clear</button>
+            </form>
+            <h3>All Milk Collections</h3>
+            <table id="milk-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Farmer</th>
+                        <th>Date</th>
+                        <th>Volume (L)</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="milk-tbody">
+                    <tr><td colspan="5">Loading milk collections...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Payments Section -->
+        <div id="payments-section" class="section">
+            <h2>Manage Payments</h2>
+            <h3>Add/Edit Payment</h3>
+            <form id="payment-form">
+                <input type="hidden" id="payment-id">
+                <div class="form-group">
+                    <label for="payment-farmer">Farmer:</label>
+                    <select id="payment-farmer" required>
+                        <option value="">Select Farmer</option>
+                    </select>
+                    <span id="payment-farmer-error" class="error"></span>
+                </div>
+                <div class="form-group">
+                    <label for="payment-amount">Amount (₹):</label>
+                    <input type="number" step="0.01" id="payment-amount" required>
+                    <span id="payment-amount-error" class="error"></span>
+                </div>
+                <div class="form-group">
+                    <label for="payment-date">Date:</label>
+                    <input type="date" id="payment-date" required>
+                    <span id="payment-date-error" class="error"></span>
+                </div>
+                <button type="submit">Save Payment</button>
+                <button type="button" onclick="clearPaymentForm()">Clear</button>
+            </form>
+            <h3>All Payments</h3>
+            <table id="payments-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Farmer</th>
+                        <th>Amount (₹)</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="payments-tbody">
+                    <tr><td colspan="5">Loading payments...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
         // API base URL for backend connection
         const API_BASE = "http://127.0.0.1:5000/api";
 
@@ -73,6 +265,8 @@
             if (sectionName === 'milk') loadMilkCollections();
             if (sectionName === 'payments') loadPayments();
         }
+
+        // --- Farmers Section ---
         async function loadFarmers() {
             try {
                 const response = await fetch(`${API_BASE}/farmers`);
@@ -293,7 +487,8 @@
             }
         });
 
-         async function loadPayments() {
+        // --- Payments Section ---
+        async function loadPayments() {
             try {
                 const response = await fetch(`${API_BASE}/payments`);
                 const payments = await response.json();
