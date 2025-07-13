@@ -293,8 +293,140 @@
             }
         });
 
+         async function loadPayments() {
+            try {
+                const response = await fetch(`${API_BASE}/payments`);
+                const payments = await response.json();
+                const tbody = document.getElementById('payments-tbody');
+                if (payments.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5">No payments found</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = payments.map(payment => {
+                    const farmer = farmers.find(f => f.id === payment.farmer_id);
+                    const farmerName = farmer ? farmer.name : 'Unknown';
+                    return `
+                        <tr>
+                            <td>${payment.id}</td>
+                            <td>${farmerName}</td>
+                            <td>₹${payment.amount}</td>
+                            <td>${payment.date}</td>
+                            <td>
+                                <button class="edit-btn" onclick="editPayment(${payment.id})">Edit</button>
+                                <button class="delete-btn" onclick="deletePayment(${payment.id})">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+                populateFarmerDropdowns();
+            } catch (error) {
+                showMessage('Failed to load payments', true);
+            }
+        }
+
+        async function editPayment(id) {
+            try {
+                const response = await fetch(`${API_BASE}/payments/${id}`);
+                const payment = await response.json();
+                document.getElementById('payment-id').value = payment.id;
+                document.getElementById('payment-farmer').value = payment.farmer_id;
+                document.getElementById('payment-amount').value = payment.amount;
+                document.getElementById('payment-date').value = payment.date;
+            } catch (error) {
+                showMessage('Failed to load payment details', true);
+            }
+        }
+
+        async function deletePayment(id) {
+            if (!confirm('Are you sure you want to delete this payment?')) return;
+            try {
+                await fetch(`${API_BASE}/payments/${id}`, { method: 'DELETE' });
+                showMessage('Payment deleted');
+                loadPayments();
+            } catch (error) {
+                showMessage('Failed to delete payment', true);
+            }
+        }
+
+        function clearPaymentForm() {
+            document.getElementById('payment-form').reset();
+            document.getElementById('payment-id').value = '';
+            document.getElementById('payment-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('payment-farmer-error').textContent = '';
+            document.getElementById('payment-amount-error').textContent = '';
+            document.getElementById('payment-date-error').textContent = '';
+        }
+
+        document.getElementById('payment-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const id = document.getElementById('payment-id').value;
+            const farmer_id = document.getElementById('payment-farmer').value;
+            const amount = parseFloat(document.getElementById('payment-amount').value);
+            const date = document.getElementById('payment-date').value;
+
+            // Simple validation
+            let isValid = true;
+            if (!farmer_id) {
+                document.getElementById('payment-farmer-error').textContent = 'Farmer is required';
+                isValid = false;
+            }
+            if (!amount || amount <= 0) {
+                document.getElementById('payment-amount-error').textContent = 'Valid amount is required';
+                isValid = false;
+            }
+            if (!date) {
+                document.getElementById('payment-date-error').textContent = 'Date is required';
+                isValid = false;
+            }
+            if (!isValid) return;
+
+            try {
+                if (id) {
+                    // Update payment
+                    await fetch(`${API_BASE}/payments/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ farmer_id: parseInt(farmer_id), amount, date })
+                    });
+                    showMessage('Payment updated');
+                } else {
+                    // Add new payment
+                    await fetch(`${API_BASE}/payments`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ farmer_id: parseInt(farmer_id), amount, date })
+                    });
+                    showMessage('Payment added');
+                }
+                clearPaymentForm();
+                loadPayments();
+            } catch (error) {
+                showMessage('Failed to save payment', true);
+            }
+        });
+
+        // Populate farmer dropdowns for milk and payment forms
+        async function populateFarmerDropdowns() {
+            try {
+                const response = await fetch(`${API_BASE}/farmers`);
+                const farmers = await response.json();
+                const dropdowns = ['milk-farmer', 'payment-farmer'];
+                dropdowns.forEach(id => {
+                    const dropdown = document.getElementById(id);
+                    dropdown.innerHTML = '<option value="">Select Farmer</option>' +
+                        farmers.map(farmer => 
+                            `<option value="${farmer.id}">${farmer.name}</option>`
+                        ).join('');
+                });
+            } catch (error) {
+                showMessage('Failed to load farmers for dropdowns', true);
+            }
+        }
+
         // Initialize the app when the page loads
         document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('milk-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('payment-date').value = new Date().toISOString().split('T')[0];
             loadFarmers();
             showSection('farmers');
         });
